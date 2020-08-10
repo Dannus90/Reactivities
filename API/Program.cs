@@ -27,6 +27,8 @@ namespace API
                     var context = services.GetRequiredService<DataContext>();
                     //Everytime we start an application it will check if a databse is created. If not it will be created based on our migrations. 
                     context.Database.Migrate();
+                    //Watch the seed file! If no activities in db it will be added. Here we pass the database context. 
+                    Seed.SeedData(context);
                 }
                 catch (Exception ex)
                 {
