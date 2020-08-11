@@ -1,43 +1,49 @@
-import React, { Component } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import axios from "axios";
-import { Header, Icon, List } from "semantic-ui-react";
+import { Container } from "semantic-ui-react";
 import { IActivity } from "../models/activity";
+import Navbar from "../../features/nav/Navbar";
+import ActivityDashboard from "../../features/activities/dashboard/ActivityDashboard";
 
-interface IState {
-    activities: IActivity[];
-}
+const App = () => {
+    const [activities, setActivities] = useState<IActivity[]>([]);
+    const [selectedActivity, setSelectedActivity] = useState<IActivity | null>(
+        null
+    );
+    const [editMode, setEditMode] = useState(false);
 
-class App extends Component<{}, IState> {
-    readonly state: IState = {
-        activities: [],
+    const handleSelectActivity = (id: string) => {
+        setSelectedActivity(activities.filter((act) => act.id === id)[0]);
     };
 
-    componentDidMount() {
+    const handleOpenCreateForm = () => {
+        setSelectedActivity(null);
+        setEditMode(true);
+    };
+
+    useEffect(() => {
         axios
             .get<IActivity[]>("http://localhost:5000/api/activities")
             .then((response) => {
-                this.setState({
-                    activities: response.data,
-                });
+                setActivities(response.data);
             });
-    }
-    render() {
-        return (
-            <div>
-                <Header as="h2">
-                    <Icon name="users" />
-                    <Header.Content>Reactivities</Header.Content>
-                </Header>
-                <List>
-                    {this.state.activities.map((activity) => (
-                        <List.Item key={activity.id}>
-                            {activity.title}
-                        </List.Item>
-                    ))}
-                </List>
-            </div>
-        );
-    }
-}
+    }, []);
+
+    return (
+        <Fragment>
+            <Navbar openCreateForm={handleOpenCreateForm} />
+            <Container style={{ marginTop: "7em" }}>
+                <ActivityDashboard
+                    activities={activities}
+                    selectActivity={handleSelectActivity}
+                    selectedActivity={selectedActivity}
+                    editMode={editMode}
+                    setEditMode={setEditMode}
+                    setSelectedActivity={setSelectedActivity}
+                />
+            </Container>
+        </Fragment>
+    );
+};
 
 export default App;
