@@ -1,77 +1,37 @@
-import React, { useState, useEffect, Fragment } from "react";
-import axios from "axios";
+import React, { useEffect, Fragment, useContext } from "react";
 import { Container } from "semantic-ui-react";
-import { IActivity } from "../models/activity";
 import Navbar from "../../features/nav/Navbar";
 import ActivityDashboard from "../../features/activities/dashboard/ActivityDashboard";
+import LoadingComponent from "./LoadingComponent";
+import ActivityStore from "../stores/activityStore";
+import { observer } from "mobx-react-lite";
+import { Route } from "react-router-dom";
+import HomePage from "../../features/home/HomePage";
+import ActivityForm from "../../features/activities/form/ActivityForm";
+import ActivityDetails from "../../features/activities/details/ActivityDetails";
 
 const App = () => {
-    const [activities, setActivities] = useState<IActivity[]>([]);
-    const [selectedActivity, setSelectedActivity] = useState<IActivity | null>(
-        null
-    );
-    const [editMode, setEditMode] = useState(false);
-
-    const handleSelectActivity = (id: string) => {
-        setSelectedActivity(activities.filter((act) => act.id === id)[0]);
-        setEditMode(false);
-    };
-
-    const handleOpenCreateForm = () => {
-        setSelectedActivity(null);
-        setEditMode(true);
-    };
-
-    const handleCreateActivity = (activity: IActivity) => {
-        setActivities([...activities, activity]);
-        setSelectedActivity(activity);
-        setEditMode(false);
-    };
-
-    const handleEditActivity = (activity: IActivity) => {
-        setActivities([
-            ...activities.filter((a) => a.id !== activity.id),
-            activity,
-        ]);
-        setSelectedActivity(activity);
-        setEditMode(false);
-    };
-
-    const handleDeleteActivity = (id: string) => {
-        setActivities([...activities.filter((a) => a.id !== id)]);
-    };
+    const activityStore = useContext(ActivityStore);
 
     useEffect(() => {
-        axios
-            .get<IActivity[]>("http://localhost:5000/api/activities")
-            .then((response) => {
-                let activities: IActivity[] = [];
-                response.data.forEach((activity) => {
-                    activity.date = activity.date.split(".")[0];
-                    activities.push(activity);
-                });
-                setActivities(activities);
-            });
-    }, []);
+        activityStore.loadActivities();
+    }, [activityStore]);
+
+    if (activityStore.loadingInitial) {
+        return <LoadingComponent content="Loading activities..." />;
+    }
 
     return (
         <Fragment>
-            <Navbar openCreateForm={handleOpenCreateForm} />
+            <Navbar />
             <Container style={{ marginTop: "7em" }}>
-                <ActivityDashboard
-                    activities={activities}
-                    selectActivity={handleSelectActivity}
-                    selectedActivity={selectedActivity}
-                    editMode={editMode}
-                    setEditMode={setEditMode}
-                    setSelectedActivity={setSelectedActivity}
-                    createActivity={handleCreateActivity}
-                    editActivity={handleEditActivity}
-                    deleteActivity={handleDeleteActivity}
-                />
+                <Route exact path="/" component={HomePage} />
+                <Route path="/activities" component={ActivityDashboard} />
+                <Route path="/activities/:id" component={ActivityDetails} />
+                <Route path="/createActivity" component={ActivityForm} />
             </Container>
         </Fragment>
     );
 };
 
-export default App;
+export default observer(App);
