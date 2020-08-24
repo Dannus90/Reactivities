@@ -15,16 +15,21 @@ interface DetailsParams {
 
 const ActivityDetails: React.FC<RouteChildrenProps<DetailsParams>> = ({
     match,
+    history
 }) => {
     const activityStore = useContext(ActivityStore);
     const { activity, loadActivity, loadingInitial } = activityStore;
 
     useEffect(() => {
-        loadActivity(match!.params.id);
-    }, [loadActivity, match]);
+        loadActivity(match!.params.id)
+    }, [loadActivity, match, history]);
 
-    if (loadingInitial || !activity) {
+    if (loadingInitial) {
         return <LoadingComponent content="Loading Activity..." />;
+    }
+
+    if(!activity) {
+      return <h2>Activity not found</h2>
     }
 
     return (
