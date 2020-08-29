@@ -6,7 +6,10 @@ import ActivityStore from "../../../app/stores/activityStore";
 import { observer } from "mobx-react-lite";
 import { RouteComponentProps } from "react-router-dom";
 import {Form as FinalForm, Field} from "react-final-form";
-import TextInput from "../../../features/activities/form/ActivityForm";
+import TextInput from "../../../app/common/form/TextInput";
+import TextAreaInput from "../../../app/common/form/TextAreaInput";
+import SelectInput from "../../../app/common/form/SelectInput";
+import {category} from "../../../app/common/options/categoryOptions";
 
 
 
@@ -92,14 +95,16 @@ const ActivityForm: React.FC<RouteComponentProps<DetailsParams>> = ({
                     <Field           
                         name="description"
                         placeholder="Description"
+                        rows={3}
                         value={activity.description}
-                        component={TextInput}
+                        component={TextAreaInput}
                     />
                     <Field
                         name="category"
                         placeholder="Category"
+                        options={category}
                         value={activity.category}
-                        component={TextInput}
+                        component={SelectInput}
                     />
                     <Field  
                         name="date"
