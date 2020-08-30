@@ -10,7 +10,7 @@ const DateInput: React.FC<IProps> = ({input, width, placeholder, date = false, t
   return (
     <Form.Field error={touched && !!error} width={width}>
       {/* REMOVED {...rest} from DateTimePicker */}
-    <DateTimePicker placeholder={placeholder} value={input.value || null} onChange={input.onChange} date={date} time={time}/>
+    <DateTimePicker placeholder={placeholder} value={input.value || null} onChange={input.onChange} date={date} onBlur={input.onBlur} onKeyDown={(e) => e.preventDefault()} time={time}/>
     {touched && error && (
       <Label basic color="red">{error}</Label>
     )}

@@ -1,6 +1,8 @@
 import { IActivity } from "./../models/activity";
 import { observable, action, computed, configure, runInAction } from "mobx";
 import { createContext, SyntheticEvent } from "react";
+import { history } from "../..";
+import { toast } from "react-toastify";
 import agent from "../api/agent";
 
 configure({ enforceActions: "always" });
@@ -56,6 +58,7 @@ export class ActivityStore {
     let activity = this.getActivity(id);
     if (activity) {
       this.activity = activity;
+      return activity;
     } else {
       this.loadingInitial = true;
       try {
@@ -63,8 +66,10 @@ export class ActivityStore {
         runInAction("getting activity", () => {
           activity.date = new Date(activity.date)
           this.activity = activity;
+          this.activityRegistry.set(activity.id, activity);
           this.loadingInitial = false;
         });
+        return activity;
       } catch (error) {
         runInAction("get activity error", () => {
           this.loadingInitial = false;
@@ -90,12 +95,13 @@ export class ActivityStore {
         this.activityRegistry.set(activity.id, activity);
         this.submitting = false;
       });
+      history.push(`/activities/${activity.id}`)
     } catch (error) {
       runInAction("create activity error", () => {
         this.submitting = false;
       });
-
-      console.log(error);
+      toast.error("Problem submitting data");
+      console.log(error.response);
     }
   };
 
@@ -108,12 +114,13 @@ export class ActivityStore {
         this.activity = activity;
         this.submitting = false;
       });
+      history.push(`/activities/${activity.id}`)
     } catch (error) {
       runInAction("editing activity error", () => {
         this.submitting = false;
       });
-
-      console.log(error);
+      toast.error("Problem submitting data");
+      console.log(error.response);
     }
   };
 
