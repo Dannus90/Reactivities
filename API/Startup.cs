@@ -1,15 +1,17 @@
 
+using System.Collections.Immutable;
 using API.Middleware;
 using Application.Activities;
 using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-
+using Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Identity;
 
 using Persistence;
 
@@ -45,7 +47,12 @@ namespace API
         cfg.RegisterValidatorsFromAssemblyContaining<Create>();
       });
 
+      var builder = services.AddIdentityCore<AppUser>();
+      var identityBuilder = new IdentityBuilder(builder.UserType, builder.Services);
+      identityBuilder.AddEntityFrameworkStores<DataContext>();
+      identityBuilder.AddSignInManager<SignInManager<AppUser>>();
 
+      services.AddAuthentication();
 
     }
 

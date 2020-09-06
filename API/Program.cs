@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Identity;
+using Domain;
 using Persistence;
 
 namespace API
@@ -21,18 +23,20 @@ namespace API
                 try
                 {
                     var context = services.GetRequiredService<DataContext>();
+                    var userManager = services.GetRequiredService<UserManager<AppUser>>();
                     //Everytime we start an application it will check if a databse is created. If not it will be created based on our migrations. 
                     context.Database.Migrate();
                     //Watch the seed file! If no activities in db it will be added. Here we pass the database context. 
-                    Seed.SeedData(context);
+                    Seed.SeedData(context, userManager).Wait();
                 }
                 catch (Exception ex)
                 {
                     var logger = services.GetRequiredService<ILogger<Program>>();
                     logger.LogError(ex, "An error occured during migration");
                 }
+
+                host.Run();
             }
-            host.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
