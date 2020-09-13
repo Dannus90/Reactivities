@@ -36,7 +36,7 @@ namespace Application.User
       }
     }
 
-    public class Handler : IRequestHandler<Command>
+    public class Handler : IRequestHandler<Command, User>
     {
       private readonly DataContext _context;
       private readonly UserManager<AppUser> _userManager;
