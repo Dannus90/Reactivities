@@ -64,18 +64,19 @@ namespace API
       identityBuilder.AddSignInManager<SignInManager<AppUser>>();
 
       var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["TokenKey"]));
-      services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt => 
+      services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
       {
-          opt.TokenValidationParameters = new TokenValidationParameters
-          {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = key,
-            ValidateAudience = false,
-            ValidateIssuer = false,
-          };
+        opt.TokenValidationParameters = new TokenValidationParameters
+        {
+          ValidateIssuerSigningKey = true,
+          IssuerSigningKey = key,
+          ValidateAudience = false,
+          ValidateIssuer = false,
+        };
       });
 
       services.AddScoped<IJwtGenerator, JwtGenerator>();
+      services.AddScoped<IUserAccessor, UserAccessor>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -94,7 +95,7 @@ namespace API
 
       app.UseAuthentication();
       app.UseAuthorization();
-      
+
       app.UseEndpoints(endpoints =>
      {
        endpoints.MapControllers();
