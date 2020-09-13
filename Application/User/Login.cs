@@ -1,15 +1,16 @@
 using System.Net;
-using System.Net.Mime;
 using System.Net.Cache;
+using System.Net.Mime;
 using System.Security.AccessControl;
-using MediatR;
-using Domain;
-using Persistence;
-using System.Threading.Tasks;
 using System.Threading;
-using FluentValidation;
+using System.Threading.Tasks;
 using Application.Errors;
+using Application.Interfaces;
+using Domain;
+using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Persistence;
 
 namespace Application.User
 {
@@ -23,50 +24,52 @@ namespace Application.User
 
     public class QueryValidator : AbstractValidator<Query>
     {
-      public QueryValidator()
+      public QueryValidator ()
       {
-        RuleFor(x => x.Email).NotEmpty();
-        RuleFor(x => x.Password).NotEmpty();
+        RuleFor (x => x.Email).NotEmpty ();
+        RuleFor (x => x.Password).NotEmpty ();
       }
 
     }
-    
-            public class Handler : IRequestHandler<Query, User>
-            {
-                private readonly UserManager<AppUser> _userManager;
-                private readonly SignInManager<AppUser> _signInManager;
-    
-                public Handler (UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
-                {
-                  this._userManager = userManager;
-                  this._signInManager = signInManager;
-                }
-    
-                public async Task<User> Handle (Query request, CancellationToken cancellationToken)
-                {
-                    var user = await _userManager.FindByEmailAsync(request.Email);
 
-                    if (user == null)
-                    {
-                      throw new RestException(HttpStatusCode.Unauthorized);
-                    }
+    public class Handler : IRequestHandler<Query, User>
+    {
+      private readonly UserManager<AppUser> _userManager;
+      private readonly SignInManager<AppUser> _signInManager;
+      private readonly IJwtGenerator _jwtGenerator;
 
-                    var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+      public Handler (UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IJwtGenerator jwtGenerator)
+      {
+        this._userManager = userManager;
+        this._signInManager = signInManager;
+        this._jwtGenerator = jwtGenerator;
+      }
 
-                    if (result.Succeeded)
-                    {
-                      // TODO: GENERATE TOKEN!
-                      return new User
-                      {
-                        DisplayName = user.DisplayName,
-                        Token = "This will be a token",
-                        Username = user.UserName,
-                        Image = null
-                      };
-                    }
+      public async Task<User> Handle (Query request, CancellationToken cancellationToken)
+      {
+        var user = await _userManager.FindByEmailAsync (request.Email);
 
-                    throw new RestException(HttpStatusCode.Unauthorized);
-                }
-            }
+        if (user == null)
+        {
+          throw new RestException (HttpStatusCode.Unauthorized);
+        }
+
+        var result = await _signInManager.CheckPasswordSignInAsync (user, request.Password, false);
+
+        if (result.Succeeded)
+        {
+          // TODO: GENERATE TOKEN!
+          return new User
+          {
+            DisplayName = user.DisplayName,
+              Token = _jwtGenerator.CreateToken(user),
+              Username = user.UserName,
+              Image = null
+          };
+        }
+
+        throw new RestException (HttpStatusCode.Unauthorized);
+      }
+    }
   }
 }
