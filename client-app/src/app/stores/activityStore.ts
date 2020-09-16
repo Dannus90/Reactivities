@@ -4,10 +4,16 @@ import { createContext, SyntheticEvent } from "react";
 import { history } from "../..";
 import { toast } from "react-toastify";
 import agent from "../api/agent";
+import { RootStore } from "./rootStore";
 
 configure({ enforceActions: "always" });
 
-export class ActivityStore {
+export default class ActivityStore {
+  rootStore: RootStore;
+  constructor(rootStore: RootStore) {
+    this.rootStore = rootStore;
+  }
+
   @observable activityRegistry = new Map();
   @observable activity!: IActivity | null;
   @observable loadingInitial = false;
@@ -148,4 +154,3 @@ export class ActivityStore {
   };
 }
 
-export default createContext(new ActivityStore());
